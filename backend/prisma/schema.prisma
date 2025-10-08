@@ -12,3 +12,17 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Role {
+  id   Int    @id @default(autoincrement())
+  nama String @unique @db.VarChar(200)
+
+  @@map("role")
+}
+
+model Skpd {
+  id   Int    @id @default(autoincrement())
+  nama String @unique @db.VarChar(200)
+
+  @@map("skpd")
+}
