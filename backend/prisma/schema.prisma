@@ -14,15 +14,30 @@ datasource db {
 }
 
 model Role {
-  id   Int    @id @default(autoincrement())
-  nama String @unique @db.VarChar(200)
+  id       Int        @id @default(autoincrement())
+  nama     String     @unique @db.VarChar(200)
+  Pengguna Pengguna[]
 
   @@map("role")
 }
 
 model Skpd {
-  id   Int    @id @default(autoincrement())
-  nama String @unique @db.VarChar(200)
+  id       Int        @id @default(autoincrement())
+  nama     String     @unique @db.VarChar(200)
+  Pengguna Pengguna[]
 
   @@map("skpd")
+}
+
+model Pengguna {
+  id       Int    @id @default(autoincrement())
+  username String @unique @db.VarChar(200)
+  nama     String @db.VarChar(200)
+  password String
+  roleId   Int
+  role     Role   @relation(fields: [roleId], references: [id])
+  skpdId   Int
+  skpd     Skpd   @relation(fields: [skpdId], references: [id])
+
+  @@map("pengguna")
 }
