@@ -54,4 +54,28 @@ export class AuthService {
             token: this.jwtService.sign(payload)
         }
     }
+
+    async logout(
+        token: string
+    ): Promise<void> {
+        try {
+            const decoded = this.jwtService.decode(token) as PayloadDecoded;
+            console.log(decoded);
+            if(!decoded || !decoded.jti || !decoded.exp) {
+                this.logger.warn('invalid token on logout attemp', {context: this.ctx});
+                return;
+            }
+
+            const { jti, exp } = decoded;
+
+            const ttl = exp - Math.floor(Date.now() / 1000);
+            if(ttl > 0){
+                const ttlInMiliSecond = ttl * 1000;
+                this.logger.debug(`Adding token JTI to deny list: ${jti} with TTL: ${ttl}s`, {context: this.ctx});
+                await this.keyv.set(jti, 'denied', ttlInMiliSecond);
+            }
+        } catch (err){
+            this.logger.error('Error during token invalidation',{context: this.ctx});
+        }
+    }
 }

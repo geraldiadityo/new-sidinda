@@ -4,7 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from '@nestjs/passport'
 import Keyv from "keyv";
 import { Strategy } from "passport-jwt";
-import { Request } from "express";
+import { FastifyRequest } from "fastify";
 import { PayloadDecoded } from "./auth.dto";
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,9 +13,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         @Inject(KEYV_INSTANCE) private keyv: Keyv
     ) {
         super({
-            jwtFromRequest: (req: Request) => {
-                if(req?.cookies?.token){
-                    return req.cookies.token
+            jwtFromRequest: (req: FastifyRequest) => {
+                if(req?.cookie?.token){
+                    return req.cookie.token
                 }
                 return null
             },

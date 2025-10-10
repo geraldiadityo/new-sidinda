@@ -1,13 +1,14 @@
-import { Global, Module } from "@nestjs/common";
+import { Global, MiddlewareConsumer, Module, NestModule, RequestMethod } from "@nestjs/common";
 import { WinstonModule } from "nest-winston";
 import { JwtModule } from '@nestjs/jwt';
 import { loggerConfig } from "./logger.config";
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaService } from "./prisma.service";
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { keyvProvider } from "./keyv.provider";
-import { APP_FILTER } from "@nestjs/core";
+import { APP_FILTER, APP_GUARD } from "@nestjs/core";
 import { ErrorFilter } from "@/utils/error.filter";
+import { AuthMiddleware } from "./auth.middleware";
 @Global()
 @Module({
     imports: [
@@ -43,11 +44,32 @@ import { ErrorFilter } from "@/utils/error.filter";
         {
             provide: APP_FILTER,
             useClass: ErrorFilter
+        },
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard
         }
     ],
     exports: [
         PrismaService,
-        keyvProvider
+        keyvProvider,
+        JwtModule
     ]
 })
-export class CommonModule {}
+export class CommonModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer.apply(AuthMiddleware)
+        .exclude({
+            path: '/api/auth/login',
+            method: RequestMethod.POST
+        })
+        .exclude({
+            path: '/api/auth/logout',
+            method: RequestMethod.POST
+        })
+        .forRoutes({
+            path: '/api/*',
+            method: RequestMethod.ALL
+        })
+    }
+}
