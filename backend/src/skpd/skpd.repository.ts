@@ -1,7 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { PrismaService } from "@/common/prisma.service";
 import { CreateSkpdDTO } from "./dto/skpd.dto";
 import { Prisma, Skpd } from "@prisma/client";
+import { WINSTON_MODULE_PROVIDER } from "nest-winston";
+import { Logger } from "winston";
+import { CacheRepository } from "@/common/cache.repository";
 
 type FindManyArgs = Parameters<PrismaService['skpd']['findMany']>[0];
 export type FindAllSkpdArgs = {
@@ -10,45 +13,73 @@ export type FindAllSkpdArgs = {
     skip?: number;
 }
 @Injectable()
-export class SkpdRepository {
+export class SkpdRepository extends CacheRepository {
+    private readonly ctx = SkpdRepository.name;
     constructor(
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         private prisma: PrismaService
-    ) { }
+    ) {
+        super()
+    }
+
+    protected getNamespace(): string {
+        return 'skpd'
+    }
 
     async findMany(args: FindManyArgs): Promise<Skpd[]> {
-        return await this.prisma.skpd.findMany({
+        const cacheKey = this.getCacheKey(args);
+        const cachedData = await this.keyv.get<Skpd[]>(cacheKey);
+        if(cachedData){
+            this.logger.debug('Fetching data from cache',{context: this.ctx});
+            return cachedData;
+        }
+        
+        this.logger.debug('Fetching data from db');
+        
+        const dbData = await this.prisma.skpd.findMany({
             ...args
         });
+        await this.keyv.set(cacheKey, dbData);
+        return dbData;
     }
 
     async create(
         data: CreateSkpdDTO
     ): Promise<Skpd> {
-        return await this.prisma.skpd.create({
+        const result = await this.prisma.skpd.create({
             data: data
-        })
+        });
+
+        await this.invalidateNameSpace();
+        return result;
     }
 
     async update(
         id: number,
         data: Partial<Skpd>,
     ): Promise<Skpd> {
-        return await this.prisma.skpd.update({
+        const result = await this.prisma.skpd.update({
             where: {
                 id: id
             },
             data: data
-        })
+        });
+
+        await this.invalidateNameSpace();
+        return result;
     }
 
     async remove(
         id: number
     ): Promise<Skpd> {
-        return await this.prisma.skpd.delete({
+        const result = await this.prisma.skpd.delete({
             where: {
                 id: id
             }
         });
+
+        await this.invalidateNameSpace();
+        return result;
     }
 
     async findAll(args: FindAllSkpdArgs): Promise<Skpd[]> {

@@ -6,7 +6,7 @@ import { RoleService } from "../role/role.service";
 import { SkpdService } from "@/skpd/skpd.service";
 import { PenggunaCreateDTO, PenggunaQueryOption, PenggunaRequestCreate, PenggunaRequestUpdate, PenggunaResponse } from "./user.dto";
 import * as bcrypt from 'bcryptjs';
-import { Prisma } from "@prisma/client";
+import { Pengguna, Prisma } from "@prisma/client";
 @Injectable()
 export class PenggunaService {
     private readonly ctx = PenggunaService.name;
@@ -27,16 +27,16 @@ export class PenggunaService {
         }
     }
 
-    private async checkUsername(
+    async checkUsername(
         username: string
-    ): Promise<PenggunaResponse | null>{
+    ): Promise<Pengguna | null>{
         this.logger.debug(`search pengguna with username: ${username}`,{context: this.ctx});
         const data = await this.repo.findByUsername(username);
         if(!data){
             return null;
         }
 
-        return this.toPenggunaResponse(data);
+        return data;
     }
 
     async penggunaMustExist(
