@@ -68,3 +68,65 @@ export const useCreateRole = (params: UseCreateRoleParams = {}) => {
         }
     })
 }
+
+// updating role
+export async function updateRole({id, data}: { id: number, data: RoleFormValues }): Promise<ResponseDataCommon<Role>> {
+    try {
+        const res = await axiosUse.put(`/api/pengguna/role/${id}`, data);
+        const resData = res.data;
+
+        return {
+            data: resData.data,
+            message: resData.message
+        }
+    } catch (err){
+        throw err;
+    }
+}
+
+type UseUpdateRoleParams = {
+    mutationConfig?: MutationConfig<typeof updateRole>;
+}
+
+export const useUpdateRole = (params: UseUpdateRoleParams = {}) => {
+    return useMutation({
+        mutationFn: updateRole,
+        ...params.mutationConfig,
+        onSuccess: (data, variables, onMutateResult, context) => {
+            // default behavior
+            queryClient.invalidateQueries({ queryKey: getRolesQueryKey() }),
+            params.mutationConfig?.onSuccess?.(data, variables, onMutateResult, context)
+        }
+    })
+}
+
+// Delete Role
+export async function deleteRole(id: number): Promise<ResponseDataCommon<boolean>> {
+    try {
+        const res = await axiosUse.delete(`/api/pengguna/role/${id}`);
+        const resData = await res.data;
+
+        return {
+            data: resData.data,
+            message: resData.message
+        }
+    } catch (err){
+        throw err;
+    }
+}
+
+type UseDeleteRoleParams = {
+    mutationConfig?: MutationConfig<typeof deleteRole>;
+}
+
+export const useDeleteRole = (params: UseDeleteRoleParams = {}) => {
+    return useMutation({
+        mutationFn: deleteRole,
+        ...params.mutationConfig,
+        onSuccess: (data, variables, onMutateResult, context) => {
+            // default behavior
+            queryClient.invalidateQueries({ queryKey: getRolesQueryKey() })
+            params.mutationConfig?.onSuccess?.(data, variables, onMutateResult, context)
+        }
+    })
+}

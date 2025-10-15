@@ -1,5 +1,6 @@
 import { useCreateRole } from "@/lib/actions/master/role";
 import { toast } from "sonner";
+import { RoleForm } from "./RoleForm";
 
 export function AddRoleForm({
     onSuccess,
@@ -15,5 +16,14 @@ export function AddRoleForm({
                 onSuccess?.()
             }
         }
-    })
+    });
+
+    return (
+        <RoleForm
+            onSubmit={(value) => createRoleMutate(value)}
+            onCancel={onCancel}
+            isSubmitting={isPending}
+            mode="create"
+        />
+    )
 }
