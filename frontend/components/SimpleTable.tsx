@@ -9,7 +9,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 
 interface SimpleTableData<TData, TValue> {
-    colums: ColumnDef<TData, TValue>[];
+    columns: ColumnDef<TData, TValue>[];
     data: TData[];
 }
 
@@ -22,8 +22,8 @@ export function SimpleTable<TData, TValue>({
     tableData,
     renderActions
 }: SimpleTableProps<TData, TValue>) {
-    const { colums, data } = tableData;
-    const tableColumns = [...colums];
+    const { columns, data } = tableData;
+    const tableColumns = [...columns];
     if(renderActions){
         tableColumns.push({
             id: 'action',
@@ -80,7 +80,7 @@ export function SimpleTable<TData, TValue>({
                         ))
                     ) : (
                         <TableRow>
-                            <TableCell colSpan={colums.length} className='h-24 text-center'>
+                            <TableCell colSpan={columns.length} className='h-24 text-center'>
                                 no result
                             </TableCell>
                         </TableRow>
