@@ -7,3 +7,5 @@ const TitleText = ({ title }:TitleProps ) => {
         <h1 className="text-2xl font-bold text-gray-900 leading-none">{title}</h1>
     )
 }
+
+export default TitleText;

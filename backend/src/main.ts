@@ -7,6 +7,12 @@ import * as fastifyCookie from '@fastify/cookie';
 // const fastifyCookie = require('@fastify/cookie').default;
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    methods: ['GET','POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Accept'],
+    credentials: true
+  });
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
   app.useLogger(logger);
   const configService = app.get(ConfigService);

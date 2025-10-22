@@ -1,11 +1,10 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Inject, Injectable } from "@nestjs/common";
-import { ThrottlerException } from "@nestjs/throttler";
-import { FastifyReply } from "fastify";
+import { ArgumentsHost, ExceptionFilter, HttpException, HttpStatus, Inject } from "@nestjs/common";
+import { Catch } from "@nestjs/common";
+import { FastifyReply, FastifyRequest } from "fastify";
 import { WINSTON_MODULE_PROVIDER } from "nest-winston";
 import { Logger } from "winston";
 
 @Catch(HttpException)
-@Injectable()
 export class ErrorFilter implements ExceptionFilter {
     private readonly context = ErrorFilter.name;
     constructor(
@@ -14,29 +13,33 @@ export class ErrorFilter implements ExceptionFilter {
 
     catch(exception: HttpException, host: ArgumentsHost) {
         const ctx = host.switchToHttp();
-        const request = ctx.getRequest();
+        const request = ctx.getRequest<FastifyRequest>();
         const response = ctx.getResponse<FastifyReply>();
-        const status = exception.getStatus();
+        
+        const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
 
-        let responseBody: any;
-        let statusCode: number;
+        const exceptionResponse = exception.getResponse();
 
-        if(exception instanceof ThrottlerException) {
-            this.logger.warn('rate limit exceed', {context: this.context});
-            statusCode = status;
-            responseBody = {
-                data: null,
-                message: 'to Many request, try again later'
-            }
+        let errorMessage: string | object;
+        
+        if(typeof exceptionResponse === 'string'){
+            errorMessage = exceptionResponse;
+        } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null && 'message' in exceptionResponse){
+            errorMessage = (exceptionResponse as any).message;
         } else {
-            statusCode = status;
-            responseBody = {
-                data: null,
-                message: exception.getResponse()
-            }
+            errorMessage = 'An unexpected error occured';
         }
 
-        response.statusCode = status;
-        response.send(responseBody)
+        this.logger.warn(
+            `[${request.method}] - ${request.url} - Status: ${status} - Error: ${JSON.stringify(errorMessage)}`,
+            {
+                context: this.context
+            }
+        )
+
+        response.status(status).send({
+            message: errorMessage,
+            timestamp: new Date().toISOString()
+        });
     }
 }

@@ -30,6 +30,9 @@ export class AuthMiddleware implements NestMiddleware {
     }
 
     async use(req: any, res: FastifyReply, next: (error?: any) => void) {
+        if(req.method === 'OPTIONS'){
+            return next();
+        }
         if(req.routerPath === '/api/auth/login' && req.method === 'POST'){
             return next();
         }

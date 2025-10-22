@@ -10,7 +10,7 @@ import { ActDialog } from "@/components/ActDialog";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { AddRoleForm } from "./AddForm";
 import { SimpleTable } from "@/components/SimpleTable";
-
+import TitleText from "@/components/TitleText";
 interface DataRoles {
     columns: ColumnDef<Role>[];
 };
