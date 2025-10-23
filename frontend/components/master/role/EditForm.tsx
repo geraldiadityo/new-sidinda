@@ -38,6 +38,7 @@ export function EditRoleForm({
             onSubmit={handleSubmit}
             onCancel={onCancel}
             isSubmitting={isPending}
+            mode="update"
         />
     )
 }
