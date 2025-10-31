@@ -2,7 +2,7 @@ FROM oven/bun:1.1 as builder
 
 WORKDIR /usr/app/src
 COPY package.json bun.lock* ./
-RUN bun install --frozen-lockfile
+RUN bun install
 
 COPY . .
 RUN bunx prisma generate
