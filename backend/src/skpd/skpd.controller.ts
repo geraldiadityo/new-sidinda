@@ -1,7 +1,7 @@
 import { Controller, HttpCode, Post, Body, Get, UsePipes, ValidationPipe, Query, Param, ParseIntPipe, Put, Delete } from "@nestjs/common";
 import { SkpdService } from "./skpd.service";
 import { CreateSkpdDTO, SkpdQueryDTO, SkpdResponse } from "./dto/skpd.dto";
-import { ApiResponse } from "src/utils/web.model";
+import { ApiResponse } from "@/utils/web.model";
 
 @Controller('/api/skpd')
 export class SkpdController {
