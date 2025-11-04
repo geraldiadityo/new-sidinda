@@ -43,7 +43,7 @@ services:
     networks:
       - backend-network
   myredis:
-    image: redis7:alpine
+    image: redis:7-alpine
     container_name: my-redis-cache
     command: redis-server /usr/local/etc/redis/redis.conf
     volumes:

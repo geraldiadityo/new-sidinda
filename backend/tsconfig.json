@@ -13,8 +13,11 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
+    // "rootDir": "src",
     "paths": {
-      "@/*": ["./src/*"] // <-- INI KUNCINYA
+      "@/*": [
+        "./src/*"
+      ] // <-- INI KUNCINYA
     },
     "incremental": true,
     "skipLibCheck": true,

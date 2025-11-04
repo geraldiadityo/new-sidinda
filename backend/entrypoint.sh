@@ -2,10 +2,10 @@
 set -e
 
 echo "menjalankan seeder database"
-npx prisma db push --schema=./prisma/schema.prisma
+bunx prisma db push --schema=./prisma/schema.prisma
 
 echo "menjalankan seeder"
-npm run seeder:dev
+bun run seeder
 
 echo "starting running aplikasi"
-exec node dist/src/main
+exec bun dist/main.js
