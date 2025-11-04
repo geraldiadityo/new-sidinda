@@ -5,7 +5,7 @@ echo "menjalankan seeder database"
 bunx prisma db push --schema=./prisma/schema.prisma
 
 echo "menjalankan seeder"
-bun run seeder
+bun ./dist/prisma/seeder.js
 
 echo "starting running aplikasi"
-exec bun dist/main.js
+exec bun -r tsconfig-paths/register dist/main.js
