@@ -8,4 +8,4 @@ echo "menjalankan seeder"
 bun ./dist/prisma/seeder.js
 
 echo "starting running aplikasi"
-exec bun -r tsconfig-paths/register dist/main.js
+exec bun -r tsconfig-paths/register dist/src/main.js
