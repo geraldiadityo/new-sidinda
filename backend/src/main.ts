@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
   app.enableCors({
     origin: 'http://localhost:3000',
-    methods: ['GET','POST', 'PUT', 'PATCH', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Accept'],
     credentials: true
   });
@@ -20,7 +20,10 @@ async function bootstrap() {
     secret: configService.get<string>('FASTIFY_COOKIE')
   });
   app.enableShutdownHooks();
-  await app.listen(configService.get('PORT'));
-  logger.log(`Backend Service running on port ${configService.get('PORT')}`, 'Bootstrap',{context: 'Bootstrap'})
+  await app.listen({
+    host: '0.0.0.0',
+    port: configService.get('PORT')
+  });
+  logger.log(`Backend Service running on port ${configService.get('PORT')}`, 'Bootstrap', { context: 'Bootstrap' })
 }
 bootstrap();
