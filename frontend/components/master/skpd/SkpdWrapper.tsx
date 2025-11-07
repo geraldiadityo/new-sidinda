@@ -104,11 +104,11 @@ export default function SkpdWrapper({
     const { page, pageSize, searchQuery } = initData.metadata;
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-    const [params, setParams] = useState<GetSkpdParams>({
+    const params: GetSkpdParams = {
         page: page,
         pageSize: pageSize,
         keyword: searchQuery
-    });
+    }
 
     const {data, isPending, isError} = useGetSkpds({params});
     
