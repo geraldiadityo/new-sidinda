@@ -22,7 +22,7 @@ pipeline {
             steps {
                 sleep 10
                 echo "Menampilkan 20 logs terakhir setelah di build"
-                sh "docker compose logs --tails=20"
+                sh "docker compose logs --tail=20"
 
                 echo "menampilkan running docker"
                 sh "docker compose ps"
