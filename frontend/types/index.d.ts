@@ -28,3 +28,11 @@ declare type Skpd = {
     id: number;
     nama: string;
 }
+
+declare type User = {
+    id: number;
+    username: string;
+    nama: string;
+    role: Role;
+    skpd: Skpd;
+}
