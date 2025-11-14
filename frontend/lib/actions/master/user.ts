@@ -53,8 +53,16 @@ export const useGetUsers = (params: UseGetUserParams) => {
 }
 // create user
 export async function createUser(data: UserFormValues): Promise<ResponseDataCommon<User>> {
+    const dataCasting = {
+        username: data.username,
+        nama: data.nama,
+        skpdId: Number(data.skpdId),
+        roleId: Number(data.roleId),
+        password: data.password,
+        confirm_password: data.confirm_password
+    }
     try {
-        const res = await axiosUse.post('/api/pengguna/user', data);
+        const res = await axiosUse.post('/api/pengguna/user', dataCasting);
         const resData = await res.data;
 
         return {

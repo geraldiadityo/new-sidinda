@@ -1,6 +1,7 @@
 import { PasswordInput } from "@/components/input/PasswordInput";
 import { ReusableCombobox } from "@/components/ReusableCombobox";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Form ,FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useGetRoles } from "@/lib/actions/master/role";
@@ -8,7 +9,7 @@ import { useGetSkpds } from "@/lib/actions/master/skpd";
 import { UserFormValues, userSchema } from "@/lib/validation/master/user-validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";
-import { Form, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 interface UserFormProps {
     defaultValues?: UserFormValues;
@@ -154,6 +155,24 @@ export function UserForm({
                     placeholder="enter confirm password"
                     description="must be same with password"
                 />
+                <div className="flex justify-end space-x-2">
+                    {onCancel && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={onCancel}
+                            disabled={isSubmitting}
+                        >
+                            Cancel
+                        </Button>
+                    )}
+                    <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? 'saving' : 'Save'}
+                    </Button>
+                </div>
             </form>
         </Form>
     )
