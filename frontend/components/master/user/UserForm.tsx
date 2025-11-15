@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Form ,FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useDebounced } from "@/hooks/useDebounce";
 import { useGetRoles } from "@/lib/actions/master/role";
 import { useGetSkpds } from "@/lib/actions/master/skpd";
 import { UserFormValues, userSchema } from "@/lib/validation/master/user-validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 
 interface UserFormProps {
@@ -26,11 +27,13 @@ export function UserForm({
     isSubmitting=false,
     mode='create'
 }: UserFormProps){
+    const [skpdQueryKeyword, setSkpdQueryKeyword] = useState("");
+    const debouncedSkpKeyword = useDebounced(skpdQueryKeyword, 300);
     const {data: skpdQuery, isLoading} = useGetSkpds({
         params: {
             page: 1,
-            pageSize: 5,
-            keyword: ''
+            pageSize: debouncedSkpKeyword ? 20 : 5,
+            keyword: debouncedSkpKeyword
         }
     });
 
@@ -132,6 +135,7 @@ export function UserForm({
                                     data={skpdOptions}
                                     isLoading={isLoading}
                                     disabled={isLoading}
+                                    onSearchQueryChange={setSkpdQueryKeyword}
                                     placeholder="Pilih SKPD"
                                     searchPlaceholder="Cari SKPD"
                                     notFoundText="SKPD tidak di temukan"

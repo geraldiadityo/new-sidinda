@@ -83,7 +83,7 @@ export const useCreateUser = (params: UseCreateUserParams = {}) => {
         mutationFn: createUser,
         ...params.mutationConfig,
         onSuccess: (data, variables, onMutateResult, context) => {
-            queryClient.invalidateQueries({queryKey: getSkpdQueryRoot()}),
+            queryClient.invalidateQueries({queryKey: getUserQueryRoot()}),
             params.mutationConfig?.onSuccess?.(data, variables, onMutateResult, context)
         }
     });
@@ -113,7 +113,7 @@ export const useDeleteUser = (params: UseDeleteUserParams = {}) => {
         mutationFn: removeUser,
         ...params.mutationConfig,
         onSuccess: (data, variables, onMutateResult, context) => {
-            queryClient.invalidateQueries({queryKey: getSkpdQueryRoot()}),
+            queryClient.invalidateQueries({queryKey: getUserQueryRoot()}),
             params.mutationConfig?.onSuccess?.(data, variables, onMutateResult, context)
         }
     })
