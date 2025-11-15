@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'standalone',
+    generateBuildId: async () => {
+        if(process.env.GIT_HASH){
+            return process.env.GIT_HASH
+        }
+
+        return `build-${new Date().toISOString().slice(0,13)}`
+    },
     async rewrites(){
         const backendUrl = process.env.INTERNAL_BACKEND_API_URL;
         
