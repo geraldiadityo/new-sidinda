@@ -4,6 +4,7 @@ import './globals.css'
 import { Toaster } from "sonner";
 import { QueryProvider } from "@/components/provider/QueryProvider";
 import { ReduxProvider } from "@/components/provider/ReduxProvider";
+import { UpgradeHandler } from "@/components/UpgradeHandler";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -19,6 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <UpgradeHandler />
         <ReduxProvider>
           <QueryProvider>
             {children}
