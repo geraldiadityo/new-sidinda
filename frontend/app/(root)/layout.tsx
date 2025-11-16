@@ -1,5 +1,5 @@
 import { MenurGroup, Sidebar } from "@/components/Sidebar";
-import { FileText, HomeIcon, Landmark } from "lucide-react";
+import { FileText, HomeIcon, Landmark, User } from "lucide-react";
 import { PrimeReactProvider } from 'primereact/api';
 export default async function RootLayout({
     children
@@ -30,8 +30,8 @@ export default async function RootLayout({
                 },
                 {
                     title: 'User',
-                    href: '/user',
-                    // icon: <User className="h-4 w-4" />
+                    href: '/pengguna',
+                    icon: <User className="h-4 w-4" />
                 }
             ]
         }
