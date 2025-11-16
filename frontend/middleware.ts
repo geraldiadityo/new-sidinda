@@ -76,11 +76,5 @@ export async function middleware(request: NextRequest){
 }
 
 export const config = {
-    matcher: [
-        '/',
-        '/login',
-        '/pengguna/:path*',
-        '/skpd/:path*',
-        '/role/:path*'
-    ]
+    matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }
