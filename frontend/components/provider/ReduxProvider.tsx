@@ -12,17 +12,7 @@ const LoadingFallback = () => (
 )
 
 export function ReduxProvider({ children }: { children: React.ReactNode }) {
-    const [isClient, setIsClient] = useState(false);
-    
-    useEffect(() => {
-        setIsClient(true);
-        console.log("ReduxProvider: Client detected.");
-    }, []);
 
-    if (!isClient) {
-        console.log("ReduxProvider: Rendering fallback (not client yet).");
-        return <LoadingFallback />;
-    }
     
     return (
         <Provider store={store}>
