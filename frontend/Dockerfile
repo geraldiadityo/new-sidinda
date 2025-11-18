@@ -22,6 +22,7 @@ COPY --from=builder --chown=appuser:appgroup /app/.next/static ./.next/static
 
 EXPOSE 3000
 ENV PORT=3000
+ENV HOSTNAME='0.0.0.0'
 
 # Jalankan server.js dengan 'node', BUKAN 'bun'
 CMD ["node", "server.js"]
