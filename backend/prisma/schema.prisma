@@ -30,14 +30,15 @@ model Skpd {
 }
 
 model Pengguna {
-  id       Int    @id @default(autoincrement())
-  username String @unique @db.VarChar(200)
-  nama     String @db.VarChar(200)
-  password String
-  roleId   Int
-  role     Role   @relation(fields: [roleId], references: [id])
-  skpdId   Int
-  skpd     Skpd   @relation(fields: [skpdId], references: [id])
+  id          Int     @id @default(autoincrement())
+  username    String  @unique @db.VarChar(200)
+  nama        String  @db.VarChar(200)
+  password    String
+  roleId      Int
+  role        Role    @relation(fields: [roleId], references: [id])
+  skpdId      Int
+  skpd        Skpd    @relation(fields: [skpdId], references: [id])
+  twoFASecret String? @db.Text
 
   @@map("pengguna")
 }

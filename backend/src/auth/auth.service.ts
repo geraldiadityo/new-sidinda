@@ -8,8 +8,10 @@ import { Logger } from "winston";
 import { LoginRequestDTO, LoginResponse, PayloadDecoded } from "./auth.dto";
 import { v4 as uuidv4 } from 'uuid';
 
-import { PenggunaResponse } from "@/pengguna/user/user.dto";
+import { PenggunaResponse, PenggunaResWithSecret } from "@/pengguna/user/user.dto";
 import * as bcrypt from 'bcryptjs';
+import { decrypt } from "@/utils/encryption.utils";
+import { authenticator } from "otplib";
 @Injectable()
 export class AuthService {
     private readonly ctx = AuthService.name;
@@ -20,7 +22,7 @@ export class AuthService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger
     ) {}
 
-    async validate(data: LoginRequestDTO): Promise<PenggunaResponse> {
+    async validate(data: LoginRequestDTO): Promise<PenggunaResWithSecret> {
         this.logger.debug(`starting searching user with username: ${data.username}`,{context: this.ctx});
         const user = await this.penggunaService.checkUsername(data.username);
         if(!user){
@@ -33,25 +35,71 @@ export class AuthService {
             throw new HttpException('username or password is incorrect', HttpStatus.UNAUTHORIZED);
         }
 
-        const validatedUser = await this.penggunaService.penggunaMustExist(user.id);
+        const validatedUser = await this.penggunaService.penggunaMustExistWtihSecret(user.id);
         return validatedUser;
     }
 
-    async login(
-        user: PenggunaResponse
-    ): Promise<LoginResponse> {
+    async loginStep1(
+        user: PenggunaResWithSecret
+    ): Promise<any> {
         this.logger.debug(`starting sign in user with username: ${user.username}`,{context: this.ctx});
+        if(!user.twoFASecret){
+            this.logger.warn(`Pengguna with username :${user.username} tidak memilki 2FA authentication`,{context: this.ctx});
+            throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+        }
+
+        const payload = {
+            username: user.username,
+            sub: user.id,
+            isTwoFactorAuthenticated: false,
+            jti: uuidv4()
+        }
+
+        const tempToken = this.jwtService.sign(payload, { expiresIn: '10m' });
+        return {
+            require2fa: true,
+            message: 'silahkan masukan otp anda',
+            tempToken: tempToken
+        }
+    }
+
+    async verify2Fa(userId: number, otpCode: string){
+        const user = await this.penggunaService.penggunaMustExistWtihSecret(userId);
+        
+        if(!user || !user.twoFASecret){
+            throw new HttpException('user invalid or 2fa is not set', HttpStatus.BAD_REQUEST);
+        }
+
+        let secret = '';
+        try {
+            secret = decrypt(user.twoFASecret);
+        } catch (e) {
+            this.logger.debug('gagal decrypt secret', {context: this.ctx});
+            throw new HttpException('Something wrong with server', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        const isValid = authenticator.verify({token: otpCode, secret: secret});
+        
+        if(!isValid){
+            throw new HttpException('Kode OTP salah atau sudah kadaluarsa', HttpStatus.UNAUTHORIZED);
+        }
+
         const payload = {
             username: user.username,
             sub: user.id,
             role: user.role,
             skpd: user.skpd,
+            isTwoFactorAuthenticated: true,
             jti: uuidv4()
         };
 
+        const userValid = await this.penggunaService.penggunaMustExist(user.id);
+
+        const fullToken = this.jwtService.sign(payload);
         return {
-            data: user,
-            token: this.jwtService.sign(payload)
+            message: 'login success',
+            user: userValid,
+            token: fullToken
         }
     }
 

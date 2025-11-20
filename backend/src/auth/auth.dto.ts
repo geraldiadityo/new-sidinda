@@ -10,6 +10,7 @@ export class PayloadDecoded {
     jti: string;
     iat: number;
     exp: number;
+    isTwoFactorAuthenticated: boolean;
 }
 
 export class LoginRequestDTO {
@@ -20,4 +21,8 @@ export class LoginRequestDTO {
 export class LoginResponse {
     data: PenggunaResponse;
     token: string;
+}
+
+export class Verify2faDTO {
+    otp: string;
 }

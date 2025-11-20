@@ -4,9 +4,12 @@ import { Logger } from "winston";
 import { PenggunaRepository } from "./user.repository";
 import { RoleService } from "../role/role.service";
 import { SkpdService } from "@/skpd/skpd.service";
-import { PenggunaCreateDTO, PenggunaQueryOption, PenggunaRequestCreate, PenggunaRequestUpdate, PenggunaResponse } from "./user.dto";
+import { PenggunaCreateDTO, PenggunaQueryOption, PenggunaRequestCreate, PenggunaRequestUpdate, PenggunaResponse, PenggunaResWithSecret } from "./user.dto";
 import * as bcrypt from 'bcryptjs';
 import { Pengguna, Prisma } from "@prisma/client";
+import { authenticator } from 'otplib';
+import * as qrcode from 'qrcode';
+import { encrypt } from "@/utils/encryption.utils";
 @Injectable()
 export class PenggunaService {
     private readonly ctx = PenggunaService.name;
@@ -24,6 +27,17 @@ export class PenggunaService {
             nama: data.nama,
             role: data.role,
             skpd: data.skpd
+        }
+    }
+
+    private toPenggunaResponseWithSecret(data: any): PenggunaResWithSecret {
+        return {
+            id: data.id,
+            username: data.username,
+            nama: data.nama,
+            role: data.role,
+            skpd: data.skpd,
+            twoFASecret: data.twoFASecret
         }
     }
 
@@ -53,9 +67,22 @@ export class PenggunaService {
         return this.toPenggunaResponse(data);
     }
 
+    async penggunaMustExistWtihSecret (
+        id: number
+    ): Promise<PenggunaResWithSecret> {
+        this.logger.debug(`Searching pengguna with id: ${id}`, {context: this.ctx});
+        const data = await this.repo.findById(id);
+        if(!data){
+            this.logger.warn(`Pengguna with id: ${id} is not found`,{context: this.ctx});
+            throw new HttpException('Pengguna is not found', HttpStatus.NOT_FOUND);
+        }
+
+        return this.toPenggunaResponseWithSecret(data);
+    }
+
     async createPengguna(
         data: PenggunaRequestCreate
-    ): Promise<PenggunaResponse> {
+    ): Promise<PenggunaResponse & {qrcodeUrl: string}> {
         this.logger.info(`starting create pengguna with name: ${data.nama} with username: ${data.username}`,{context: this.ctx});
         const checkUsername = await this.checkUsername(data.username);
         if(checkUsername){
@@ -71,17 +98,30 @@ export class PenggunaService {
         }
 
         data.password = await bcrypt.hash(data.password, 10);
+        const secret = authenticator.generateSecret();
+        const encryptedSecret = encrypt(secret);
         const dataSender: PenggunaCreateDTO = {
             username: data.username,
             nama: data.nama,
             roleId: role.id,
             skpdId: skpd.id,
-            password: data.password
+            password: data.password,
+            twoFASecret: encryptedSecret
         }
 
         const newPengguna = await this.repo.create(dataSender);
+        const otpAuthUrl = authenticator.keyuri(
+            newPengguna.username,
+            'SIDINDA-APPS',
+            secret
+        );
+        const qrcodeUrl = await qrcode.toDataURL(otpAuthUrl);
+
         this.logger.info(`pengguna with username: ${newPengguna.username} was create successfully`,{context: this.ctx});
-        return this.toPenggunaResponse(newPengguna);
+        return {
+            ...this.toPenggunaResponse(newPengguna),
+            qrcodeUrl
+        }
     }
 
     async updatePengguna(

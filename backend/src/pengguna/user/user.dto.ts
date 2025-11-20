@@ -46,6 +46,7 @@ export class PenggunaCreateDTO {
     roleId: number;
     skpdId: number;
     password: string;
+    twoFASecret: string;
 }
 
 export class PenggunaResponse {
@@ -54,4 +55,8 @@ export class PenggunaResponse {
     nama: string;
     role: RoleResponse;
     skpd: SkpdResponse;
+}
+
+export class PenggunaResWithSecret extends PenggunaResponse {
+    twoFASecret: string;
 }
