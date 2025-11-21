@@ -6,11 +6,13 @@ import { PayloadDecoded } from "./auth.dto";
 export class JwtPreAuthGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean {
         const request = context.switchToHttp().getRequest();
-        const user = request.user as PayloadDecoded;
-        
+        const user = request.user || (request.raw || request.raw.user) as PayloadDecoded;
+
         if(!user){
             throw new HttpException('Token expired or invalid', HttpStatus.UNAUTHORIZED);
         }
+
+        request.user = user.user
 
         return true;
     }

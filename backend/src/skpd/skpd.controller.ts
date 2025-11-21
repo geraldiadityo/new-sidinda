@@ -1,7 +1,8 @@
-import { Controller, HttpCode, Post, Body, Get, UsePipes, ValidationPipe, Query, Param, ParseIntPipe, Put, Delete } from "@nestjs/common";
+import { Controller, HttpCode, Post, Body, Get, UsePipes, ValidationPipe, Query, Param, ParseIntPipe, Put, Delete, UseGuards } from "@nestjs/common";
 import { SkpdService } from "./skpd.service";
 import { CreateSkpdDTO, SkpdQueryDTO, SkpdResponse } from "./dto/skpd.dto";
 import { ApiResponse } from "@/utils/web.model";
+import { Jwt2faGuard } from "@/auth/jwt-2fa.guard";
 
 @Controller('/api/skpd')
 export class SkpdController {
@@ -22,6 +23,7 @@ export class SkpdController {
         }
     }
 
+    @UseGuards(Jwt2faGuard)
     @Get()
     @HttpCode(200)
     @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
