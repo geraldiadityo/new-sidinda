@@ -5,4 +5,9 @@ export const authSchema = z.object({
     password: z.string().min(8, 'Minimal 8 character')
 });
 
+export const otpSchema = z.object({
+    otp: z.string().min(6, 'Kode OTP Minimal 6 digit')
+});
+
 export type AuthFormValues = z.infer<typeof authSchema>;
+export type OtpFormValues = z.infer<typeof otpSchema>;

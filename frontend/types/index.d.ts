@@ -19,6 +19,12 @@ declare type ResponseDataCommon<T> = {
     message: string;
 }
 
+declare type LoginResponse = {
+    require2fa: boolean;
+    tempToken: string;
+    message: string;
+}
+
 declare type Role = {
     id: number;
     nama: string;

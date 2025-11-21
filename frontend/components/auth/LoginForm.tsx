@@ -1,6 +1,6 @@
 'use client';
-import { useLogin } from "@/hooks/useAuth";
-import { AuthFormValues, authSchema } from "@/lib/validation/auth";
+import { useLogin, useVerifyOtp } from "@/hooks/useAuth";
+import { AuthFormValues, authSchema, OtpFormValues, otpSchema } from "@/lib/validation/auth";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -9,10 +9,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "../ui/input";
 import { PasswordInput } from "../input/PasswordInput";
 import { Button } from "../ui/button";
+import { useState } from "react";
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "../ui/input-otp";
 
 export function LoginForm() {
     const router = useRouter();
-    const form = useForm<AuthFormValues>({
+    const loginForm = useForm<AuthFormValues>({
         resolver: zodResolver(authSchema),
         defaultValues: {
             username: '',
@@ -20,25 +22,105 @@ export function LoginForm() {
         }
     });
 
-    const { mutate: login, isPending } = useLogin();
+    const otpForm = useForm<OtpFormValues>({
+        resolver: zodResolver(otpSchema),
+        defaultValues: {
+            otp: ''
+        }
+    });
 
-    function onSubmit(data: AuthFormValues){
+    const [step, setStep] = useState<'credentials' | 'otp'>('credentials');
+    const [tempToken, setTempToken] = useState<string>('');
+
+    const { mutate: login, isPending: isLoginPending } = useLogin();
+    const { mutate: verifyOtpMutate, isPending: isVerifyPending } = useVerifyOtp();
+
+    function onLoginSubmit(data: AuthFormValues){
         login(data, {
-            onSuccess: () => {
-                toast.success('login success');
-                router.push('/');
+            onSuccess: (res) => {
+                if(res.require2fa && res.tempToken){
+                    setTempToken(res.tempToken);
+                    setStep('otp');
+                    toast.info(res.message);
+                }
             },
             onError: (err) => {
-                toast.error(err.message || 'Terjadi Kesalahan');
+                toast.error(err.message);
             }
-        })
+        });
+    };
+
+    function onOtpSubmit(data: OtpFormValues){
+        if(!tempToken){
+            toast.info('sesi kadaluarsa, mohon login ulang');
+            setStep('credentials');
+            return;
+        }
+
+        verifyOtpMutate({ otp: data.otp, tempToken: tempToken });
+    }
+
+    if(step === 'otp'){
+        return (
+            <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                <div className="text-center space-y-2">
+                    <h3 className="text-center space-y-2">Verifikasi 2 langkah</h3>
+                    <p className="text-sm text-muted-foreground">Masukan 6 digit kode OTP</p>
+                </div>
+                <Form {...otpForm}>
+                    <form onSubmit={otpForm.handleSubmit(onOtpSubmit)} className="space-y-6">
+                        <FormField
+                            control={otpForm.control}
+                            name="otp"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <div className="flex justify-center">
+                                            <InputOTP maxLength={6} {...field}>
+                                                <InputOTPGroup>
+                                                    <InputOTPSlot index={0} />
+                                                    <InputOTPSlot index={1} />
+                                                    <InputOTPSlot index={2} />
+                                                </InputOTPGroup>
+                                                <InputOTPSeparator />
+                                                <InputOTPGroup>
+                                                    <InputOTPSlot index={3} />
+                                                    <InputOTPSlot index={4} />
+                                                    <InputOTPSlot index={5} />
+                                                </InputOTPGroup>
+                                            </InputOTP>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <Button
+                            type="submit"
+                            className="w-full"
+                            disabled={isVerifyPending}
+                        >
+                            { isVerifyPending ? 'Memverifikasi...' : 'Verifikasi' }
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            className="w-full"
+                            onClick={() => setStep('credentials')}
+                        >
+                            Kembali
+                        </Button>
+                    </form>
+                </Form>
+            </div>
+        )
     }
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
+        <Form {...loginForm}>
+            <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="w-full space-y-6">
                 <FormField
-                    control={form.control}
+                    control={loginForm.control}
                     name="username"
                     render={({ field }) => (
                         <FormItem>
@@ -47,7 +129,7 @@ export function LoginForm() {
                                 <Input
                                     placeholder="username"
                                     {...field}
-                                    disabled={isPending}
+                                    disabled={isLoginPending}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -55,7 +137,7 @@ export function LoginForm() {
                     )}
                 />
                 <PasswordInput
-                    control={form.control}
+                    control={loginForm.control}
                     name="password"
                     label="password"
                     placeholder="enter your password"
@@ -65,9 +147,9 @@ export function LoginForm() {
                     type="submit"
                     className="w-full"
                     variant="default"
-                    disabled={isPending}
+                    disabled={isLoginPending}
                 >
-                    {isPending ? 'sign in...' : 'Login'}
+                    {isLoginPending ? 'sign in...' : 'Login'}
                 </Button>
             </form>
         </Form>
